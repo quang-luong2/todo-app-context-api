@@ -1,11 +1,58 @@
 import { useStore } from "../store/customStore";
+import { addTodo, deleteTodo, updateTodo } from "../store/actions";
+import { useEffect, useRef, useState } from "react";
 
 function Layout() {
-
+    const [valueInput, setValueInput] = useState('')
+    const [isStatus, setIsStatus] = useState(false)
+    const [indexTodo, setIndexTodo] = useState(0)
+    const inputRef = useRef()
     const [state, dispatch] = useStore()
-    const {todos, valueInput} = state
+    const todos = state.todos
 
-    console.log(todos, state);
+    useEffect(() => {
+        const elementInput = inputRef.current
+
+        elementInput.onkeyup = (e) => {
+            if(e.which === 13) {
+                if(isStatus === false) {
+                    dispatch(addTodo(valueInput))
+                    setValueInput('')
+                    inputRef.current.focus()
+                }
+            }
+        }
+    }, [valueInput])
+
+    const handleAddTodo = () => {
+        if(isStatus) {
+            todos.map((todoName, index) => {
+                if(indexTodo === index) {
+                    dispatch(updateTodo({
+                        index,
+                        name: valueInput
+                    }))
+                    setIsStatus(false)
+                    setValueInput('')
+                }
+            })
+        } else {
+            dispatch(addTodo(valueInput))
+            setValueInput('')
+            inputRef.current.focus()
+        }
+    }
+
+    const handleUpdateTodo = (index) => {
+        todos.map((todoName, indexTodo) => {
+            if(index === indexTodo) {
+                setValueInput(todoName)
+                setIndexTodo(index)
+                setIsStatus(true)
+                inputRef.current.focus()
+            }
+        })
+    }
 
     return (
         <div className='todo'>
@@ -16,57 +63,44 @@ function Layout() {
                     className='mr-05' 
                     value={valueInput}
                     placeholder='Nhập tên công việc' 
+                    ref={inputRef}
+                    onChange={(e) => setValueInput(e.target.value)}
                 />
                 <div 
                     className='todo__btn todo__btn--add'
+                    onClick={handleAddTodo}
                 >
-                    <i className="fas fa-plus"></i>
-                    Thêm
+                    {isStatus ? <i className="fas fa-check"></i> : <i className="fas fa-plus"></i>}
+                    {isStatus ? 'Cập nhật' : 'Thêm'}
                 </div>
             </div>
             <div className='todo__list'>
-                <div className='todo__item'>
-                    <input type='checkbox' />
-                    <p className='todo__item__name'>abc abc abc</p>
-                    <div className='todo__actions'>
-                        <div className='todo__btn todo__btn--update mr-05'>
-                            <i className="fas fa-pen"></i>
-                            Sửa
-                        </div>
-                        <div className='todo__btn todo__btn--delete'>
-                            <i className="fas fa-trash-alt"></i>
-                            Xóa
-                        </div>
-                    </div>
-                </div>
-                <div className='todo__item'>
-                    <input type='checkbox' />
-                    <p className='todo__item__name'>22222222</p>
-                    <div className='todo__actions'>
-                        <div className='todo__btn todo__btn--update mr-05'>
-                            <i className="fas fa-pen"></i>
-                            Sửa
-                        </div>
-                        <div className='todo__btn todo__btn--delete'>
-                            <i className="fas fa-trash-alt"></i>
-                            Xóa
-                        </div>
-                    </div>
-                </div>
-                <div className='todo__item'>
-                    <input type='checkbox' />
-                    <p className='todo__item__name'>1111111</p>
-                    <div className='todo__actions'>
-                        <div className='todo__btn todo__btn--update mr-05'>
-                            <i className="fas fa-pen"></i>
-                            Sửa
-                        </div>
-                        <div className='todo__btn todo__btn--delete'>
-                            <i className="fas fa-trash-alt"></i>
-                            Xóa
-                        </div>
-                    </div>
-                </div>
+                {
+                    todos.map((todo, index) => {
+                        return (
+                            <div className='todo__item' key={index}>
+                                <input type='checkbox' />
+                                <p className='todo__item__name'>{todo}</p>
+                                <div className='todo__actions'>
+                                    <div 
+                                        className='todo__btn todo__btn--update mr-05'
+                                        onClick={() => handleUpdateTodo(index)}
+                                    >
+                                        <i className="fas fa-pen"></i>
+                                        Sửa
+                                    </div>
+                                    <div 
+                                        className='todo__btn todo__btn--delete'
+                                        onClick={() => dispatch(deleteTodo(index))}
+                                    >
+                                        <i className="fas fa-trash-alt"></i>
+                                        Xóa
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    })
+                }
             </div>
         </div>
     );
