@@ -1,12 +1,11 @@
-import './sass/index.scss';
-import Layout from './views/Layout';
+import Layout from './components/Layout'
 
 function App() {
   return (
-    <div className="app">
+    <div className='app'>
       <Layout />
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
